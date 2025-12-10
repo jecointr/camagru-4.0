@@ -1,0 +1,41 @@
+# docker-compose.yml
+services:
+  # Serveur Web
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+
+  # Interpréteur PHP
+  php:
+    build: .
+    volumes:
+      - ./:/var/www/html
+
+  # Base de données
+  db:
+    image: mariadb:10.6
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306" # Optionnel, utile pour vérifier la DB via un client SQL sur ton Mac
+
+  # Serveur Mail de test (Interface web sur port 8025)
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025" # SMTP port
+      - "8025:8025" # Web UI
+
+volumes:
+  db_data:
